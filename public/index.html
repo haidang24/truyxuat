@@ -1,477 +1,492 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Truy xuất nguồn gốc sản phẩm</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      padding: 0;
-      margin: 0;
-      background-color: #f5f7fa;
-      color: #333;
-    }
-    
-    .header {
-      background: linear-gradient(135deg, #1e88e5, #0d47a1);
-      color: white;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
-    .header h1 {
-      margin: 0;
-      font-weight: 500;
-      font-size: 24px;
-    }
-    
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 0 20px;
-    }
-    
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      padding: 25px;
-      margin-bottom: 20px;
-      transition: transform 0.2s;
-    }
-    
-    .search-container {
-      display: flex;
-      margin-bottom: 15px;
-    }
-    
-    .search-input {
-      flex: 1;
-      padding: 12px 15px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px 0 0 8px;
-      font-size: 16px;
-      outline: none;
-      transition: border 0.3s;
-    }
-    
-    .search-input:focus {
-      border-color: #1e88e5;
-    }
-    
-    .search-button {
-      background-color: #1e88e5;
-      color: white;
-      border: none;
-      border-radius: 0 8px 8px 0;
-      padding: 12px 20px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-    
-    .search-button:hover {
-      background-color: #0d47a1;
-    }
-    
-    .qr-container {
-      margin: 20px 0;
-    }
-    
-    .qr-toggle {
-      background-color: #f5f5f5;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 10px 15px;
-      width: 100%;
-      text-align: left;
-      cursor: pointer;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    
-    .qr-toggle:hover {
-      background-color: #eeeeee;
-    }
-    
-    #reader {
-      margin-top: 15px;
-      border-radius: 8px;
-      overflow: hidden;
-      display: none;
-    }
-    
-    .result-container {
-      margin-top: 20px;
-      display: none;
-    }
-    
-    .product-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .product-title {
-      font-size: 22px;
-      font-weight: 500;
-      margin: 0;
-    }
-    
-    .product-id {
-      background-color: #e3f2fd;
-      color: #1e88e5;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    
-    .product-details {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    
-    .detail-item {
-      padding: 10px;
-      background-color: #f9f9f9;
-      border-radius: 8px;
-    }
-    
-    .detail-label {
-      font-size: 12px;
-      color: #757575;
-      margin-bottom: 5px;
-    }
-    
-    .detail-value {
-      font-weight: 500;
-    }
-    
-    .history-title {
-      font-size: 18px;
-      margin: 25px 0 15px 0;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .timeline {
-      position: relative;
-      padding-left: 30px;
-    }
-    
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 7px;
-      top: 0;
-      height: 100%;
-      width: 2px;
-      background-color: #e0e0e0;
-    }
-    
-    .timeline-item {
-      position: relative;
-      margin-bottom: 20px;
-      padding-bottom: 20px;
-    }
-    
-    .timeline-item:last-child {
-      margin-bottom: 0;
-    }
-    
-    .timeline-dot {
-      position: absolute;
-      left: -30px;
-      top: 0;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background-color: #1e88e5;
-      border: 3px solid white;
-      box-shadow: 0 0 0 1px #1e88e5;
-    }
-    
-    .timeline-date {
-      font-size: 14px;
-      color: #757575;
-      margin-bottom: 5px;
-    }
-    
-    .timeline-action {
-      font-weight: 500;
-      margin-bottom: 5px;
-    }
-    
-    .timeline-location {
-      font-size: 14px;
-      color: #424242;
-      margin-bottom: 5px;
-    }
-    
-    .timeline-description {
-      font-size: 14px;
-      color: #616161;
-      line-height: 1.5;
-    }
-    
-    .error-message {
-      background-color: #ffebee;
-      color: #c62828;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-      display: none;
-      text-align: center;
-    }
-    
-    @media (max-width: 600px) {
-      .product-details {
-        grid-template-columns: 1fr;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Truy xuất nguồn gốc sản phẩm</title>
+    <script
+      src="https://unpkg.com/html5-qrcode"
+      type="text/javascript"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        padding: 0;
+        margin: 0;
+        background-color: #f5f7fa;
+        color: #333;
       }
-      
-      .search-container {
-        flex-direction: column;
-      }
-      
-      .search-input {
-        border-radius: 8px;
-        margin-bottom: 10px;
-      }
-      
-      .search-button {
-        border-radius: 8px;
-        width: 100%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Truy xuất nguồn gốc sản phẩm</h1>
-  </div>
-  
-  <div class="container">
-    <div class="card">
-      <div class="search-container">
-        <input type="text" id="productId" class="search-input" placeholder="Nhập mã sản phẩm">
-        <button id="searchButton" class="search-button">
-          <i class="fas fa-search"></i> Tìm kiếm
-        </button>
-      </div>
-      
-      <div class="qr-container">
-        <button class="qr-toggle" id="qrToggle">
-          <span><i class="fas fa-qrcode"></i> Quét mã QR</span>
-          <i class="fas fa-chevron-down" id="qr-icon"></i>
-        </button>
-        <div id="reader"></div>
-      </div>
-    </div>
-    
-    <div id="resultContainer" class="card result-container">
-      <div class="product-header">
-        <h2 class="product-title" id="productName"></h2>
-        <span class="product-id" id="displayProductId"></span>
-      </div>
-      
-      <div class="product-details" id="productDetails">
-        <!-- Product details will be inserted here -->
-      </div>
-      
-      <h3 class="history-title">Lịch sử sản phẩm</h3>
-      <div class="timeline" id="productHistory">
-        <!-- History timeline will be inserted here -->
-      </div>
-    </div>
-    
-    <div id="errorMessage" class="error-message">
-      Không tìm thấy thông tin sản phẩm!
-    </div>
-  </div>
 
-  <script>
-    // DOM elements
-    const productIdInput = document.getElementById('productId');
-    const searchButton = document.getElementById('searchButton');
-    const qrToggle = document.getElementById('qrToggle');
-    const qrIcon = document.getElementById('qr-icon');
-    const readerElement = document.getElementById('reader');
-    const resultContainer = document.getElementById('resultContainer');
-    const errorMessage = document.getElementById('errorMessage');
-    
-    // Event listeners
-    searchButton.addEventListener('click', searchProduct);
-    productIdInput.addEventListener('keypress', function(event) {
-      if (event.key === 'Enter') {
-        searchProduct();
+      .header {
+        background: linear-gradient(135deg, #1e88e5, #0d47a1);
+        color: white;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
-    });
-    qrToggle.addEventListener('click', toggleQrScanner);
-    
-    let qrScannerVisible = false;
-    let html5QrcodeScanner = null;
-    
-    function toggleQrScanner() {
-      qrScannerVisible = !qrScannerVisible;
-      
-      if (qrScannerVisible) {
-        readerElement.style.display = 'block';
-        qrIcon.className = 'fas fa-chevron-up';
-        
-        if (!html5QrcodeScanner) {
-          html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", 
-            { fps: 10, qrbox: { width: 250, height: 250 } }
-          );
-          html5QrcodeScanner.render(onScanSuccess);
+
+      .header h1 {
+        margin: 0;
+        font-weight: 500;
+        font-size: 24px;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+      }
+
+      .search-container {
+        display: flex;
+        margin-bottom: 15px;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px 0 0 8px;
+        font-size: 16px;
+        outline: none;
+        transition: border 0.3s;
+      }
+
+      .search-input:focus {
+        border-color: #1e88e5;
+      }
+
+      .search-button {
+        background-color: #1e88e5;
+        color: white;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+
+      .search-button:hover {
+        background-color: #0d47a1;
+      }
+
+      .qr-container {
+        margin: 20px 0;
+      }
+
+      .qr-toggle {
+        background-color: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px 15px;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .qr-toggle:hover {
+        background-color: #eeeeee;
+      }
+
+      #reader {
+        margin-top: 15px;
+        border-radius: 8px;
+        overflow: hidden;
+        display: none;
+      }
+
+      .result-container {
+        margin-top: 20px;
+        display: none;
+      }
+
+      .product-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .product-title {
+        font-size: 22px;
+        font-weight: 500;
+        margin: 0;
+      }
+
+      .product-id {
+        background-color: #e3f2fd;
+        color: #1e88e5;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .product-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .detail-item {
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+      }
+
+      .detail-label {
+        font-size: 12px;
+        color: #757575;
+        margin-bottom: 5px;
+      }
+
+      .detail-value {
+        font-weight: 500;
+      }
+
+      .history-title {
+        font-size: 18px;
+        margin: 25px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .timeline {
+        position: relative;
+        padding-left: 30px;
+      }
+
+      .timeline::before {
+        content: "";
+        position: absolute;
+        left: 7px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background-color: #e0e0e0;
+      }
+
+      .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+      }
+
+      .timeline-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .timeline-dot {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #1e88e5;
+        border: 3px solid white;
+        box-shadow: 0 0 0 1px #1e88e5;
+      }
+
+      .timeline-date {
+        font-size: 14px;
+        color: #757575;
+        margin-bottom: 5px;
+      }
+
+      .timeline-action {
+        font-weight: 500;
+        margin-bottom: 5px;
+      }
+
+      .timeline-location {
+        font-size: 14px;
+        color: #424242;
+        margin-bottom: 5px;
+      }
+
+      .timeline-description {
+        font-size: 14px;
+        color: #616161;
+        line-height: 1.5;
+      }
+
+      .error-message {
+        background-color: #ffebee;
+        color: #c62828;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        display: none;
+        text-align: center;
+      }
+
+      @media (max-width: 600px) {
+        .product-details {
+          grid-template-columns: 1fr;
         }
-      } else {
-        readerElement.style.display = 'none';
-        qrIcon.className = 'fas fa-chevron-down';
+
+        .search-container {
+          flex-direction: column;
+        }
+
+        .search-input {
+          border-radius: 8px;
+          margin-bottom: 10px;
+        }
+
+        .search-button {
+          border-radius: 8px;
+          width: 100%;
+        }
       }
-    }
-    
-    async function searchProduct() {
-      const id = productIdInput.value.trim();
-      
-      if (!id) {
-        alert('Vui lòng nhập mã sản phẩm!');
-        return;
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Truy xuất nguồn gốc sản phẩm</h1>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <div class="search-container">
+          <input
+            type="text"
+            id="productId"
+            class="search-input"
+            placeholder="Nhập mã sản phẩm"
+          />
+          <button id="searchButton" class="search-button">
+            <i class="fas fa-search"></i> Tìm kiếm
+          </button>
+        </div>
+
+        <div class="qr-container">
+          <button class="qr-toggle" id="qrToggle">
+            <span><i class="fas fa-qrcode"></i> Quét mã QR</span>
+            <i class="fas fa-chevron-down" id="qr-icon"></i>
+          </button>
+          <div id="reader"></div>
+        </div>
+      </div>
+
+      <div id="resultContainer" class="card result-container">
+        <div class="product-header">
+          <h2 class="product-title" id="productName"></h2>
+          <span class="product-id" id="displayProductId"></span>
+        </div>
+
+        <div class="product-details" id="productDetails">
+          <!-- Product details will be inserted here -->
+        </div>
+
+        <h3 class="history-title">Lịch sử sản phẩm</h3>
+        <div class="timeline" id="productHistory">
+          <!-- History timeline will be inserted here -->
+        </div>
+      </div>
+
+      <div id="errorMessage" class="error-message">
+        Không tìm thấy thông tin sản phẩm!
+      </div>
+    </div>
+
+    <script>
+      // DOM elements
+      const productIdInput = document.getElementById("productId");
+      const searchButton = document.getElementById("searchButton");
+      const qrToggle = document.getElementById("qrToggle");
+      const qrIcon = document.getElementById("qr-icon");
+      const readerElement = document.getElementById("reader");
+      const resultContainer = document.getElementById("resultContainer");
+      const errorMessage = document.getElementById("errorMessage");
+
+      // Event listeners
+      searchButton.addEventListener("click", searchProduct);
+      productIdInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          searchProduct();
+        }
+      });
+      qrToggle.addEventListener("click", toggleQrScanner);
+
+      let qrScannerVisible = false;
+      let html5QrcodeScanner = null;
+
+      function toggleQrScanner() {
+        qrScannerVisible = !qrScannerVisible;
+
+        if (qrScannerVisible) {
+          readerElement.style.display = "block";
+          qrIcon.className = "fas fa-chevron-up";
+
+          if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+            });
+            html5QrcodeScanner.render(onScanSuccess);
+          }
+        } else {
+          readerElement.style.display = "none";
+          qrIcon.className = "fas fa-chevron-down";
+        }
       }
-      
-      try {
-        console.log('Searching for product:', id);
-        const res = await fetch(`/product/${id}`);
-        
-        if (!res.ok) {
-          resultContainer.style.display = 'none';
-          errorMessage.style.display = 'block';
-          console.log('Product not found');
+
+      async function searchProduct() {
+        const id = productIdInput.value.trim();
+
+        if (!id) {
+          alert("Vui lòng nhập mã sản phẩm!");
           return;
         }
-        
-        const data = await res.json();
-        console.log('Product data received:', data);
-        
-        displayProductInfo(data);
-        
-        resultContainer.style.display = 'block';
-        errorMessage.style.display = 'none';
-      } catch (error) {
-        console.error('Error searching for product:', error);
-        resultContainer.style.display = 'none';
-        errorMessage.style.display = 'block';
-      }
-    }
-    
-    function displayProductInfo(product) {
-      // Display product name and ID
-      document.getElementById('productName').textContent = product.name;
-      document.getElementById('displayProductId').textContent = product.id;
-      
-      // Display product details
-      const detailsContainer = document.getElementById('productDetails');
-      detailsContainer.innerHTML = '';
-      
-      // Add basic product info (excluding id, name, and history)
-      const excludeFields = ['id', 'name', 'history'];
-      
-      for (const [key, value] of Object.entries(product)) {
-        if (!excludeFields.includes(key) && typeof value !== 'object') {
-          const detailItem = document.createElement('div');
-          detailItem.className = 'detail-item';
-          
-          const label = document.createElement('div');
-          label.className = 'detail-label';
-          label.textContent = formatLabel(key);
-          
-          const valueElement = document.createElement('div');
-          valueElement.className = 'detail-value';
-          valueElement.textContent = value;
-          
-          detailItem.appendChild(label);
-          detailItem.appendChild(valueElement);
-          detailsContainer.appendChild(detailItem);
+
+        try {
+          console.log("Searching for product:", id);
+          const res = await fetch(`/product/${id}`);
+
+          if (!res.ok) {
+            resultContainer.style.display = "none";
+            errorMessage.style.display = "block";
+            console.log("Product not found");
+            return;
+          }
+
+          const data = await res.json();
+          console.log("Product data received:", data);
+
+          displayProductInfo(data);
+
+          resultContainer.style.display = "block";
+          errorMessage.style.display = "none";
+        } catch (error) {
+          console.error("Error searching for product:", error);
+          resultContainer.style.display = "none";
+          errorMessage.style.display = "block";
         }
       }
-      
-      // Display history timeline
-      const historyContainer = document.getElementById('productHistory');
-      historyContainer.innerHTML = '';
-      
-      if (product.history && product.history.length > 0) {
-        console.log('Displaying history:', product.history);
-        product.history.forEach(entry => {
-          const timelineItem = document.createElement('div');
-          timelineItem.className = 'timeline-item';
-          
-          const dot = document.createElement('div');
-          dot.className = 'timeline-dot';
-          
-          const date = document.createElement('div');
-          date.className = 'timeline-date';
-          date.textContent = formatDate(entry.date);
-          
-          const action = document.createElement('div');
-          action.className = 'timeline-action';
-          action.textContent = entry.action;
-          
-          const location = document.createElement('div');
-          location.className = 'timeline-location';
-          location.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${entry.location}`;
-          
-          const description = document.createElement('div');
-          description.className = 'timeline-description';
-          description.textContent = entry.description;
-          
-          timelineItem.appendChild(dot);
-          timelineItem.appendChild(date);
-          timelineItem.appendChild(action);
-          timelineItem.appendChild(location);
-          timelineItem.appendChild(description);
-          
-          historyContainer.appendChild(timelineItem);
-        });
-      } else {
-        console.log('No history found');
-        historyContainer.innerHTML = '<p>Chưa có thông tin lịch sử cho sản phẩm này.</p>';
+
+      function displayProductInfo(product) {
+        // Display product name and ID
+        document.getElementById("productName").textContent = product.name;
+        document.getElementById("displayProductId").textContent = product.id;
+
+        // Display product details
+        const detailsContainer = document.getElementById("productDetails");
+        detailsContainer.innerHTML = "";
+
+        // Add basic product info (excluding id, name, and history)
+        const excludeFields = ["id", "name", "history"];
+
+        for (const [key, value] of Object.entries(product)) {
+          if (!excludeFields.includes(key) && typeof value !== "object") {
+            const detailItem = document.createElement("div");
+            detailItem.className = "detail-item";
+
+            const label = document.createElement("div");
+            label.className = "detail-label";
+            label.textContent = formatLabel(key);
+
+            const valueElement = document.createElement("div");
+            valueElement.className = "detail-value";
+            valueElement.textContent = value;
+
+            detailItem.appendChild(label);
+            detailItem.appendChild(valueElement);
+            detailsContainer.appendChild(detailItem);
+          }
+        }
+
+        // Display history timeline
+        const historyContainer = document.getElementById("productHistory");
+        historyContainer.innerHTML = "";
+
+        if (product.history && product.history.length > 0) {
+          console.log("Displaying history:", product.history);
+          product.history.forEach((entry) => {
+            const timelineItem = document.createElement("div");
+            timelineItem.className = "timeline-item";
+
+            const dot = document.createElement("div");
+            dot.className = "timeline-dot";
+
+            const date = document.createElement("div");
+            date.className = "timeline-date";
+            date.textContent = formatDate(entry.date);
+
+            const action = document.createElement("div");
+            action.className = "timeline-action";
+            action.textContent = entry.action;
+
+            const location = document.createElement("div");
+            location.className = "timeline-location";
+            location.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${entry.location}`;
+
+            const description = document.createElement("div");
+            description.className = "timeline-description";
+            description.textContent = entry.description;
+
+            timelineItem.appendChild(dot);
+            timelineItem.appendChild(date);
+            timelineItem.appendChild(action);
+            timelineItem.appendChild(location);
+            timelineItem.appendChild(description);
+
+            historyContainer.appendChild(timelineItem);
+          });
+        } else {
+          console.log("No history found");
+          historyContainer.innerHTML =
+            "<p>Chưa có thông tin lịch sử cho sản phẩm này.</p>";
+        }
       }
-    }
-    
-    function formatLabel(key) {
-      // Convert camelCase to Title Case with spaces
-      const result = key.replace(/([A-Z])/g, ' $1');
-      return result.charAt(0).toUpperCase() + result.slice(1);
-    }
-    
-    function formatDate(dateString) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      return new Date(dateString).toLocaleDateString('vi-VN', options);
-    }
-    
-    function onScanSuccess(decodedText) {
-      productIdInput.value = decodedText;
-      searchProduct();
-      
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
-        qrScannerVisible = false;
-        readerElement.style.display = 'none';
-        qrIcon.className = 'fas fa-chevron-down';
+
+      function formatLabel(key) {
+        // Convert camelCase to Title Case with spaces
+        const result = key.replace(/([A-Z])/g, " $1");
+        return result.charAt(0).toUpperCase() + result.slice(1);
       }
-    }
-  </script>
-</body>
+
+      function formatDate(dateString) {
+        const options = { year: "numeric", month: "long", day: "numeric" };
+        return new Date(dateString).toLocaleDateString("vi-VN", options);
+      }
+
+      function onScanSuccess(decodedText) {
+        productIdInput.value = decodedText;
+        searchProduct();
+
+        if (html5QrcodeScanner) {
+          html5QrcodeScanner.clear();
+          qrScannerVisible = false;
+          readerElement.style.display = "none";
+          qrIcon.className = "fas fa-chevron-down";
+        }
+      }
+    </script>
+  </body>
 </html>

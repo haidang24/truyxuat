@@ -1,176 +1,192 @@
-const express = require('express');
-const fs = require('fs');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const BlockchainService = require("./blockchain-service");
+
 const app = express();
-const PORT = 3000;
+const PORT = 4000;
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(express.static("public"));
 
-// Lấy thông tin sản phẩm theo ID
-app.get('/product/:id', (req, res) => {
-    const id = req.params.id;
-    try {
-        // Đọc dữ liệu sản phẩm
-        const productsData = JSON.parse(fs.readFileSync('./data/products.json'));
-        const product = productsData.find(p => p.id === id);
-        
-        if (!product) {
-            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
-        }
-        
-        // Đọc dữ liệu lịch sử
-        let history = [];
-        if (fs.existsSync('./data/history.json')) {
-            const historyData = JSON.parse(fs.readFileSync('./data/history.json'));
-            history = historyData.filter(h => h.productId === id);
-        }
-        
-        // Trả về sản phẩm kèm lịch sử
-        const result = {
-            ...product,
-            history: history
-        };
-        
-        console.log('Sending product with history:', result); // Debug log
-        res.json(result);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ message: 'Lỗi server' });
+// Khởi tạo blockchain service
+const blockchainService = new BlockchainService();
+
+// Lấy thông tin sản phẩm theo ID từ blockchain
+app.get("/product/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    console.log(`Getting product ${id} from blockchain...`);
+
+    const product = await blockchainService.getProduct(id);
+    const history = await blockchainService.getProductHistory(id);
+
+    // Trả về sản phẩm kèm lịch sử
+    const result = {
+      ...product,
+      history: history,
+      dataSource: "blockchain",
+    };
+
+    console.log("Product loaded from blockchain:", result.id);
+    res.json(result);
+  } catch (error) {
+    console.error("Error getting product from blockchain:", error);
+    if (error.message.includes("San pham khong ton tai")) {
+      res
+        .status(404)
+        .json({ message: "Không tìm thấy sản phẩm trên blockchain" });
+    } else {
+      res.status(500).json({ message: "Lỗi khi truy xuất từ blockchain" });
     }
+  }
 });
 
-// API thêm sản phẩm mới
-app.post('/product', (req, res) => {
-    try {
-        const newProduct = req.body;
-        
-        // Kiểm tra dữ liệu đầu vào
-        if (!newProduct.id || !newProduct.name) {
-            return res.status(400).json({ message: 'Thiếu thông tin sản phẩm' });
-        }
-        
-        const data = JSON.parse(fs.readFileSync('./data/products.json'));
-        
-        // Kiểm tra ID đã tồn tại chưa
-        if (data.some(p => p.id === newProduct.id)) {
-            return res.status(400).json({ message: 'ID sản phẩm đã tồn tại' });
-        }
-        
-        data.push(newProduct);
-        fs.writeFileSync('./data/products.json', JSON.stringify(data, null, 2));
-        res.status(201).json({ message: 'Đã thêm sản phẩm', product: newProduct });
-    } catch (error) {
-        console.error('Lỗi:', error);
-        res.status(500).json({ message: 'Lỗi server' });
+// API thêm sản phẩm mới vào blockchain
+app.post("/product", async (req, res) => {
+  try {
+    const newProduct = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!newProduct.id || !newProduct.name) {
+      return res.status(400).json({ message: "Thiếu thông tin sản phẩm" });
     }
+
+    console.log(`Adding product ${newProduct.id} to blockchain...`);
+
+    // Thêm vào blockchain
+    const txHash = await blockchainService.addProduct(newProduct);
+    console.log(
+      `Product ${newProduct.id} added to blockchain with tx: ${txHash}`
+    );
+
+    res.status(201).json({
+      message: "Đã thêm sản phẩm vào blockchain",
+      product: newProduct,
+      txHash: txHash,
+    });
+  } catch (error) {
+    console.error("Error adding product to blockchain:", error);
+    if (error.message.includes("San pham da ton tai")) {
+      res
+        .status(400)
+        .json({ message: "ID sản phẩm đã tồn tại trên blockchain" });
+    } else {
+      res.status(500).json({ message: "Lỗi khi thêm sản phẩm vào blockchain" });
+    }
+  }
 });
 
-// API thêm giai đoạn mới vào lịch sử sản phẩm
-app.post('/product/:id/history', (req, res) => {
-    try {
-        const productId = req.params.id;
-        const historyEntry = req.body;
-        
-        // Kiểm tra sản phẩm tồn tại
-        const productsData = JSON.parse(fs.readFileSync('./data/products.json'));
-        const productExists = productsData.some(p => p.id === productId);
-        
-        if (!productExists) {
-            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
-        }
-        
-        // Kiểm tra dữ liệu đầu vào
-        if (!historyEntry.date || !historyEntry.action) {
-            return res.status(400).json({ message: 'Thiếu thông tin lịch sử' });
-        }
-        
-        // Thêm ID sản phẩm vào mục lịch sử
-        historyEntry.productId = productId;
-        historyEntry.timestamp = new Date().toISOString();
-        
-        // Đọc file lịch sử hoặc tạo mới nếu chưa có
-        let historyData = [];
-        if (fs.existsSync('./data/history.json')) {
-            historyData = JSON.parse(fs.readFileSync('./data/history.json'));
-        }
-        
-        // Thêm mục lịch sử mới
-        historyData.push(historyEntry);
-        
-        // Lưu lại file lịch sử
-        fs.writeFileSync('./data/history.json', JSON.stringify(historyData, null, 2));
-        
-        res.status(201).json({ message: 'Đã thêm lịch sử sản phẩm', entry: historyEntry });
-    } catch (error) {
-        console.error('Lỗi:', error);
-        res.status(500).json({ message: 'Lỗi server' });
+// API thêm giai đoạn mới vào lịch sử sản phẩm trên blockchain
+app.post("/product/:id/history", async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const historyEntry = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!historyEntry.action) {
+      return res.status(400).json({ message: "Thiếu thông tin lịch sử" });
     }
+
+    console.log(`Adding history for product ${productId} to blockchain...`);
+
+    // Chuẩn bị dữ liệu lịch sử cho blockchain
+    const blockchainHistoryEntry = {
+      productId: productId,
+      action: historyEntry.action,
+      description: historyEntry.description || "",
+      actor: historyEntry.actor || "",
+      location: historyEntry.location || "",
+      timestamp: historyEntry.timestamp || new Date().toISOString(),
+    };
+
+    // Thêm vào blockchain
+    const txHash = await blockchainService.addHistoryEntry(
+      blockchainHistoryEntry
+    );
+    console.log(
+      `History for ${productId} added to blockchain with tx: ${txHash}`
+    );
+
+    res.status(201).json({
+      message: "Đã thêm lịch sử sản phẩm vào blockchain",
+      entry: blockchainHistoryEntry,
+      txHash: txHash,
+    });
+  } catch (error) {
+    console.error("Error adding history to blockchain:", error);
+    if (error.message.includes("San pham khong ton tai")) {
+      res
+        .status(404)
+        .json({ message: "Không tìm thấy sản phẩm trên blockchain" });
+    } else {
+      res.status(500).json({ message: "Lỗi khi thêm lịch sử vào blockchain" });
+    }
+  }
 });
 
-// API cập nhật thông tin sản phẩm
-app.put('/product/:id', (req, res) => {
-    try {
-        const productId = req.params.id;
-        const updatedInfo = req.body;
-        
-        // Đọc dữ liệu sản phẩm
-        const data = JSON.parse(fs.readFileSync('./data/products.json'));
-        const productIndex = data.findIndex(p => p.id === productId);
-        
-        if (productIndex === -1) {
-            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
-        }
-        
-        // Cập nhật thông tin sản phẩm (giữ nguyên ID)
-        const updatedProduct = { ...data[productIndex], ...updatedInfo, id: productId };
-        data[productIndex] = updatedProduct;
-        
-        // Lưu lại dữ liệu
-        fs.writeFileSync('./data/products.json', JSON.stringify(data, null, 2));
-        
-        res.json({ message: 'Đã cập nhật sản phẩm', product: updatedProduct });
-    } catch (error) {
-        console.error('Lỗi:', error);
-        res.status(500).json({ message: 'Lỗi server' });
-    }
+// API lấy tất cả sản phẩm từ blockchain
+app.get("/products", async (req, res) => {
+  try {
+    console.log("Getting all products from blockchain...");
+    const products = await blockchainService.getAllProducts();
+    res.json({
+      products: products,
+      count: products.length,
+      dataSource: "blockchain",
+    });
+  } catch (error) {
+    console.error("Error getting products from blockchain:", error);
+    res.status(500).json({ message: "Lỗi khi lấy dữ liệu từ blockchain" });
+  }
 });
 
-// API xóa sản phẩm
-app.delete('/product/:id', (req, res) => {
-    try {
-        const productId = req.params.id;
-        
-        // Đọc dữ liệu sản phẩm
-        const data = JSON.parse(fs.readFileSync('./data/products.json'));
-        const productIndex = data.findIndex(p => p.id === productId);
-        
-        if (productIndex === -1) {
-            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
-        }
-        
-        // Xóa sản phẩm
-        const deletedProduct = data.splice(productIndex, 1)[0];
-        
-        // Lưu lại dữ liệu
-        fs.writeFileSync('./data/products.json', JSON.stringify(data, null, 2));
-        
-        // Tùy chọn: Xóa lịch sử của sản phẩm
-        if (fs.existsSync('./data/history.json')) {
-            const historyData = JSON.parse(fs.readFileSync('./data/history.json'));
-            const filteredHistory = historyData.filter(h => h.productId !== productId);
-            fs.writeFileSync('./data/history.json', JSON.stringify(filteredHistory, null, 2));
-        }
-        
-        res.json({ message: 'Đã xóa sản phẩm', product: deletedProduct });
-    } catch (error) {
-        console.error('Lỗi:', error);
-        res.status(500).json({ message: 'Lỗi server' });
+// API lấy tất cả sản phẩm từ blockchain (endpoint cũ để tương thích)
+app.get("/blockchain/products", async (req, res) => {
+  try {
+    const products = await blockchainService.getAllProducts();
+    res.json({
+      products: products,
+      count: products.length,
+    });
+  } catch (error) {
+    console.error("Error getting products from blockchain:", error);
+    res.status(500).json({ message: "Lỗi khi lấy dữ liệu từ blockchain" });
+  }
+});
+
+// API kiểm tra trạng thái blockchain
+app.get("/blockchain/status", async (req, res) => {
+  try {
+    if (!blockchainService.contract) {
+      await blockchainService.loadContract();
     }
+
+    if (blockchainService.contract) {
+      const productCount = await blockchainService.contract.getProductCount();
+      res.json({
+        status: "connected",
+        contractAddress: blockchainService.contractAddress,
+        productCount: productCount.toString(),
+      });
+    } else {
+      res.status(503).json({
+        status: "disconnected",
+        message: "Blockchain không khả dụng",
+      });
+    }
+  } catch (error) {
+    console.error("Error checking blockchain status:", error);
+    res.status(503).json({
+      status: "error",
+      message: "Lỗi khi kiểm tra blockchain",
+    });
+  }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server chạy tại http://localhost:${PORT}`);
+  console.log(`Server chạy tại http://localhost:${PORT}`);
+  console.log("🔗 Blockchain-only mode enabled");
+  console.log("📝 All data operations use blockchain storage");
 });

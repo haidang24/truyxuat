@@ -1,4 +1,4 @@
-## Quy Trình Vận Hành Chuyên Nghiệp Ứng Dụng Truy Xuất Nguồn Gốc QR Code
+## Quy Trình Vận Hành Chuyên Nghiệp Ứng Dụng Truy Xuất Nguồn Gốc
 
 ### Giai Đoạn 0: Chuẩn Bị và Cấu Hình Hệ Thống (Vai trò: Quản Trị Viên - Admin)
 
@@ -6,9 +6,6 @@ Mục tiêu: Thiết lập nền tảng vững chắc cho hệ thống hoạt đ
 
 1.  **Triển Khai Hạ Tầng:**
     * **Máy chủ (Server):** Triển khai ứng dụng Node.js (`server.js`) lên một máy chủ đáng tin cậy (Cloud server như AWS, Azure, Google Cloud hoặc server vật lý).
-    * **Cơ sở dữ liệu (Database):**
-        * **Cải tiến quan trọng:** Thay thế việc lưu trữ dữ liệu bằng file JSON (`products.json`, `history.json`) bằng một hệ quản trị cơ sở dữ liệu thực thụ (ví dụ: PostgreSQL, MySQL, MongoDB). Điều này đảm bảo tính toàn vẹn dữ liệu, khả năng truy vấn hiệu quả, và hỗ trợ nhiều người dùng đồng thời.
-        * Thiết kế cấu trúc bảng/collections cho sản phẩm, lịch sử quét, người dùng, vai trò, quyền hạn, và các thông tin liên quan khác (nhà sản xuất, lô sản xuất, điểm phân phối,...).
     * **Tên miền (Domain) & SSL:** Cấu hình tên miền và cài đặt chứng chỉ SSL/TLS để đảm bảo giao tiếp mã hóa (HTTPS) cho tất cả các API.
     * **Hệ thống Backup & Restore:** Thiết lập cơ chế sao lưu dữ liệu tự động và quy trình khôi phục khi có sự cố.
 
