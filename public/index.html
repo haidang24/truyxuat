@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Truy xuất nguồn gốc sản phẩm</title>
+    <title>Truy xuất nguồn gốc nông sản</title>
     <script
       src="https://unpkg.com/html5-qrcode"
       type="text/javascript"
     ></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link
@@ -17,476 +17,1866 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <style>
-      body {
-        font-family: "Roboto", sans-serif;
-        padding: 0;
+      :root {
+        --primary-color: #10b981;
+        --primary-dark: #059669;
+        --primary-light: #34d399;
+        --secondary-color: #3b82f6;
+        --secondary-dark: #2563eb;
+        --error-color: #ef4444;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --text-color: #1f2937;
+        --text-light: #6b7280;
+        --background-color: #f3f4f6;
+        --card-background: #ffffff;
+        --border-color: #e5e7eb;
+        --border-radius: 12px;
+        --border-radius-lg: 16px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+      }
+
+      * {
         margin: 0;
-        background-color: #f5f7fa;
-        color: #333;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
       }
 
       .header {
-        background: linear-gradient(135deg, #1e88e5, #0d47a1);
-        color: white;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--primary-dark)
+        );
+        padding: 1.5rem;
+        position: relative;
+        margin: 1rem;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow);
       }
 
       .header h1 {
         margin: 0;
-        font-weight: 500;
-        font-size: 24px;
+        font-size: 1.75rem;
+        color: white;
+        text-align: center;
+      }
+
+      .header p {
+        margin: 0.5rem 0 0;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-align: center;
+      }
+
+      .blockchain-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        color: white;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+      }
+
+      .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--success-color);
+        position: relative;
+      }
+
+      .status-indicator.offline {
+        background: var(--error-color);
+      }
+
+      .status-indicator::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: inherit;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
       }
 
       .container {
-        max-width: 800px;
-        margin: 20px auto;
-        padding: 0 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
       }
 
-      .card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        padding: 25px;
-        margin-bottom: 20px;
-        transition: transform 0.2s;
+      .tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        background: var(--card-background);
+        padding: 0.75rem;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow);
+      }
+
+      .tab {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        border: none;
+        border-radius: var(--border-radius);
+        background: transparent;
+        color: var(--text-light);
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+
+      .tab:hover {
+        background: rgba(16, 185, 129, 0.05);
+        color: var(--primary-color);
+      }
+
+      .tab.active {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
       }
 
       .search-container {
+        max-width: 800px;
+        margin: 3rem auto;
+      }
+
+      .search-box {
         display: flex;
-        margin-bottom: 15px;
+        gap: 1rem;
+        margin-bottom: 2rem;
       }
 
-      .search-input {
+      .search-box input {
         flex: 1;
-        padding: 12px 15px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px 0 0 8px;
-        font-size: 16px;
+        padding: 1rem 1.5rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: var(--card-background);
+      }
+
+      .search-box input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         outline: none;
-        transition: border 0.3s;
       }
 
-      .search-input:focus {
-        border-color: #1e88e5;
-      }
-
-      .search-button {
-        background-color: #1e88e5;
-        color: white;
+      .search-box button {
+        padding: 1rem 2rem;
         border: none;
-        border-radius: 0 8px 8px 0;
-        padding: 12px 20px;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        font-weight: 500;
         cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s;
-      }
-
-      .search-button:hover {
-        background-color: #0d47a1;
-      }
-
-      .qr-container {
-        margin: 20px 0;
-      }
-
-      .qr-toggle {
-        background-color: #f5f5f5;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 10px 15px;
-        width: 100%;
-        text-align: left;
-        cursor: pointer;
-        font-size: 16px;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 0.5rem;
       }
 
-      .qr-toggle:hover {
-        background-color: #eeeeee;
+      .search-box button {
+        background: var(--primary-color);
+        color: white;
       }
 
-      #reader {
-        margin-top: 15px;
-        border-radius: 8px;
+      .search-box button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
+      }
+
+      .search-box .qr-button {
+        background: var(--secondary-color);
+      }
+
+      .search-box .qr-button:hover {
+        background: var(--secondary-dark);
+      }
+
+      .product-card {
+        background: var(--card-background);
+        border-radius: var(--border-radius-lg);
         overflow: hidden;
-        display: none;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
       }
 
-      .result-container {
-        margin-top: 20px;
-        display: none;
+      .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
+      .product-info {
+        padding: 1.5rem;
+      }
+
+      .product-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .product-meta {
+        display: flex;
+        gap: 1rem;
+        color: var(--text-light);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+      }
+
+      .timeline {
+        margin-top: 2rem;
+        padding-left: 2rem;
+        border-left: 2px solid var(--border-color);
+      }
+
+      .timeline-item {
+        position: relative;
+        padding-bottom: 2rem;
+      }
+
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -2.5rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: var(--primary-color);
+        border: 3px solid white;
+        box-shadow: var(--shadow);
+      }
+
+      .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-light);
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .timeline-content {
+        background: var(--card-background);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 1rem 2rem;
+        border-radius: var(--border-radius);
+        color: white;
+        font-weight: 500;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-1rem);
+      }
+
+      .toast.success {
+        background: var(--success-color);
+      }
+
+      .toast.error {
+        background: var(--error-color);
+      }
+
+      @media (max-width: 768px) {
+        .header {
+          padding: 1.5rem 0;
+        }
+
+        .header h1 {
+          font-size: 1.875rem;
+        }
+
+        .container {
+          padding: 0 1rem;
+        }
+
+        .search-box {
+          flex-direction: column;
+        }
+
+        .search-box button {
+          width: 100%;
+        }
+
+        .tabs {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .product-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .section-header {
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+
+      .section-header h2 {
+        font-size: 1.875rem;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .section-header p {
+        color: var(--text-light);
+        font-size: 1.125rem;
+      }
+
+      .form-container {
+        background: var(--card-background);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+      }
+
+      .form-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--background-color);
+        border-radius: var(--border-radius);
+      }
+
+      .form-section h3 {
+        font-size: 1.25rem;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: var(--card-background);
+      }
+
+      .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        outline: none;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--border-color);
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
+      }
+
+      .btn-secondary {
+        background: var(--background-color);
+        color: var(--text-color);
+        border: 2px solid var(--border-color);
+      }
+
+      .btn-secondary:hover {
+        background: var(--border-color);
+        transform: translateY(-1px);
+      }
+
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      @media (max-width: 768px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      .product-detail {
+        background: var(--card-background);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
       }
 
       .product-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
+        gap: 2rem;
+        padding: 2rem;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--primary-dark)
+        );
+        color: white;
       }
 
-      .product-title {
-        font-size: 22px;
-        font-weight: 500;
-        margin: 0;
+      .product-header .product-image {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: var(--border-radius);
+        border: 4px solid rgba(255, 255, 255, 0.2);
       }
 
-      .product-id {
-        background-color: #e3f2fd;
-        color: #1e88e5;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 14px;
+      .product-header .product-title {
+        flex: 1;
       }
 
-      .product-details {
+      .product-header h2 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .product-header .product-id {
+        font-size: 1.125rem;
+        opacity: 0.9;
+      }
+
+      .product-sections {
+        padding: 2rem;
+      }
+
+      .product-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--background-color);
+        border-radius: var(--border-radius);
+      }
+
+      .product-section h3 {
+        font-size: 1.25rem;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .info-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
       }
 
-      .detail-item {
-        padding: 10px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
-      .detail-label {
-        font-size: 12px;
-        color: #757575;
-        margin-bottom: 5px;
+      .info-item label {
+        color: var(--text-light);
+        font-size: 0.875rem;
       }
 
-      .detail-value {
+      .info-item span {
+        color: var(--text-color);
         font-weight: 500;
-      }
-
-      .history-title {
-        font-size: 18px;
-        margin: 25px 0 15px 0;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
       }
 
       .timeline {
         position: relative;
-        padding-left: 30px;
+        padding-left: 2rem;
       }
 
       .timeline::before {
         content: "";
         position: absolute;
-        left: 7px;
+        left: 0;
         top: 0;
-        height: 100%;
+        bottom: 0;
         width: 2px;
-        background-color: #e0e0e0;
+        background: var(--border-color);
       }
 
       .timeline-item {
         position: relative;
-        margin-bottom: 20px;
-        padding-bottom: 20px;
+        padding-bottom: 2rem;
       }
 
       .timeline-item:last-child {
+        padding-bottom: 0;
+      }
+
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -2.5rem;
+        top: 0;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: var(--primary-color);
+        border: 3px solid white;
+        box-shadow: var(--shadow);
+      }
+
+      .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: var(--text-light);
+        font-size: 0.875rem;
+      }
+
+      .timeline-content {
+        background: white;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .timeline-content p {
+        margin-bottom: 0.5rem;
+      }
+
+      .timeline-content p:last-child {
         margin-bottom: 0;
       }
 
-      .timeline-dot {
-        position: absolute;
-        left: -30px;
-        top: 0;
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background-color: #1e88e5;
-        border: 3px solid white;
-        box-shadow: 0 0 0 1px #1e88e5;
-      }
-
-      .timeline-date {
-        font-size: 14px;
-        color: #757575;
-        margin-bottom: 5px;
-      }
-
-      .timeline-action {
-        font-weight: 500;
-        margin-bottom: 5px;
-      }
-
-      .timeline-location {
-        font-size: 14px;
-        color: #424242;
-        margin-bottom: 5px;
-      }
-
-      .timeline-description {
-        font-size: 14px;
-        color: #616161;
-        line-height: 1.5;
-      }
-
-      .error-message {
-        background-color: #ffebee;
-        color: #c62828;
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 20px;
-        display: none;
+      .no-data {
         text-align: center;
+        padding: 2rem;
+        color: var(--text-light);
+        font-style: italic;
       }
 
-      @media (max-width: 600px) {
-        .product-details {
+      @media (max-width: 768px) {
+        .product-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 1rem;
+        }
+
+        .product-header .product-image {
+          width: 150px;
+          height: 150px;
+        }
+
+        .info-grid {
           grid-template-columns: 1fr;
         }
+      }
 
-        .search-container {
-          flex-direction: column;
-        }
+      .stage-specific-fields {
+        margin-top: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        background: rgba(255, 255, 255, 0.05);
+      }
 
-        .search-input {
-          border-radius: 8px;
-          margin-bottom: 10px;
-        }
+      .stage-specific-fields label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
 
-        .search-button {
-          border-radius: 8px;
-          width: 100%;
-        }
+      .sub-fields {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .sub-fields input {
+        width: 100%;
       }
     </style>
   </head>
   <body>
     <div class="header">
-      <h1>Truy xuất nguồn gốc sản phẩm</h1>
+      <div class="container">
+        <h1><i class="fas fa-leaf"></i> Truy xuất nguồn gốc nông sản</h1>
+        <p>
+          Hệ thống truy xuất nguồn gốc nông sản minh bạch và đáng tin cậy trên
+          nền tảng blockchain
+        </p>
+        <div class="blockchain-status">
+          <div class="status-indicator"></div>
+          <span
+            >Blockchain:
+            <span id="blockchainStatus">Đang kết nối...</span></span
+          >
+        </div>
+      </div>
     </div>
 
     <div class="container">
-      <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="search">
+          <i class="fas fa-search"></i> Tra cứu
+        </button>
+        <button class="tab" data-tab="add">
+          <i class="fas fa-plus"></i> Thêm nông sản
+        </button>
+        <button class="tab" data-tab="history">
+          <i class="fas fa-history"></i> Thêm lịch sử
+        </button>
+        <button class="tab" data-tab="list">
+          <i class="fas fa-list"></i> Danh sách
+        </button>
+      </div>
+
+      <!-- Search Section -->
+      <div id="searchSection" class="section">
+        <div class="section-header">
+          <h2><i class="fas fa-search"></i> Tra cứu nông sản</h2>
+          <p>Nhập mã sản phẩm hoặc quét mã QR để xem thông tin chi tiết</p>
+        </div>
         <div class="search-container">
-          <input
-            type="text"
-            id="productId"
-            class="search-input"
-            placeholder="Nhập mã sản phẩm"
-          />
-          <button id="searchButton" class="search-button">
-            <i class="fas fa-search"></i> Tìm kiếm
-          </button>
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Nhập mã sản phẩm..."
+            />
+            <button
+              onclick="searchProduct(document.getElementById('searchInput').value)"
+            >
+              <i class="fas fa-search"></i> Tìm kiếm
+            </button>
+            <button onclick="showScanner()" class="qr-button">
+              <i class="fas fa-qrcode"></i> Quét QR
+            </button>
+          </div>
         </div>
+        <div id="searchResult" class="search-result"></div>
+      </div>
 
-        <div class="qr-container">
-          <button class="qr-toggle" id="qrToggle">
-            <span><i class="fas fa-qrcode"></i> Quét mã QR</span>
-            <i class="fas fa-chevron-down" id="qr-icon"></i>
-          </button>
-          <div id="reader"></div>
+      <!-- Add Product Section -->
+      <div id="addSection" class="section" style="display: none">
+        <div class="section-header">
+          <h2><i class="fas fa-plus"></i> Thêm nông sản mới</h2>
+          <p>Nhập thông tin chi tiết về sản phẩm nông nghiệp</p>
+        </div>
+        <div class="form-container">
+          <form id="addProductForm" onsubmit="return addProduct(event)">
+            <div class="form-grid">
+              <!-- Thông tin cơ bản -->
+              <div class="form-section">
+                <h3>Thông tin cơ bản</h3>
+                <div class="form-group">
+                  <label for="productId">Mã sản phẩm *</label>
+                  <input
+                    type="text"
+                    id="productId"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="productName">Tên sản phẩm *</label>
+                  <input
+                    type="text"
+                    id="productName"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="variety">Giống/Loại *</label>
+                  <input
+                    type="text"
+                    id="variety"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="description">Mô tả sản phẩm</label>
+                  <textarea
+                    id="description"
+                    class="form-control"
+                    rows="3"
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Thông tin nguồn gốc -->
+              <div class="form-section">
+                <h3>Thông tin nguồn gốc</h3>
+                <div class="form-group">
+                  <label for="origin">Nguồn gốc xuất xứ *</label>
+                  <input
+                    type="text"
+                    id="origin"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="farmName">Tên trang trại/nhà vườn *</label>
+                  <input
+                    type="text"
+                    id="farmName"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="farmAddress">Địa chỉ trang trại</label>
+                  <input type="text" id="farmAddress" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label for="farmerId">Mã số nông hộ *</label>
+                  <input
+                    type="text"
+                    id="farmerId"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="farmerName">Tên chủ trang trại/nông hộ *</label>
+                  <input
+                    type="text"
+                    id="farmerName"
+                    class="form-control"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Thông tin thời gian -->
+              <div class="form-section">
+                <h3>Thông tin thời gian</h3>
+                <div class="form-group">
+                  <label for="plantingDate">Ngày gieo trồng *</label>
+                  <input
+                    type="date"
+                    id="plantingDate"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="harvestDate">Ngày thu hoạch</label>
+                  <input type="date" id="harvestDate" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label for="packagingDate">Ngày đóng gói</label>
+                  <input type="date" id="packagingDate" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label for="expiryDate">Hạn sử dụng</label>
+                  <input type="date" id="expiryDate" class="form-control" />
+                </div>
+              </div>
+
+              <!-- Thông tin bảo quản và chất lượng -->
+              <div class="form-section">
+                <h3>Thông tin bảo quản và chất lượng</h3>
+                <div class="form-group">
+                  <label for="storageTemp">Nhiệt độ bảo quản</label>
+                  <input
+                    type="text"
+                    id="storageTemp"
+                    class="form-control"
+                    placeholder="Ví dụ: 15-25°C"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="storageInstr">Hướng dẫn bảo quản</label>
+                  <textarea
+                    id="storageInstr"
+                    class="form-control"
+                    rows="2"
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="quantity">Số lượng *</label>
+                  <input
+                    type="text"
+                    id="quantity"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="unit">Đơn vị tính *</label>
+                  <input
+                    type="text"
+                    id="unit"
+                    class="form-control"
+                    required
+                    placeholder="kg, tấn, ..."
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="grade">Phân hạng chất lượng</label>
+                  <select id="grade" class="form-control">
+                    <option value="">Chọn phân hạng</option>
+                    <option value="Premium">Premium</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Economy">Economy</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="certifications">Chứng nhận</label>
+                  <input
+                    type="text"
+                    id="certifications"
+                    class="form-control"
+                    placeholder="VietGAP, GlobalGAP, Organic..."
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="images">URL hình ảnh</label>
+                  <input
+                    type="text"
+                    id="images"
+                    class="form-control"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Lưu sản phẩm
+              </button>
+              <button type="reset" class="btn btn-secondary">
+                <i class="fas fa-undo"></i> Làm mới
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
-      <div id="resultContainer" class="card result-container">
-        <div class="product-header">
-          <h2 class="product-title" id="productName"></h2>
-          <span class="product-id" id="displayProductId"></span>
+      <!-- Add History Section -->
+      <div id="historySection" class="section" style="display: none">
+        <div class="section-header">
+          <h2><i class="fas fa-history"></i> Thêm lịch sử sản phẩm</h2>
+          <p>Cập nhật thông tin về quá trình sản xuất và vận chuyển</p>
         </div>
+        <div class="form-container">
+          <form id="addHistoryForm" onsubmit="return addHistory(event)">
+            <div class="form-section">
+              <div class="form-group">
+                <label for="historyProductId">Mã sản phẩm *</label>
+                <div class="search-box">
+                  <input
+                    type="text"
+                    id="historyProductId"
+                    class="form-control"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onclick="searchProduct(document.getElementById('historyProductId').value)"
+                    class="btn btn-secondary"
+                  >
+                    <i class="fas fa-search"></i> Kiểm tra
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-section">
+                <h3>Thông tin giai đoạn</h3>
+                <div class="form-group">
+                  <label for="historyStage">Giai đoạn *</label>
+                  <select id="historyStage" class="form-control" required>
+                    <option value="">Chọn giai đoạn...</option>
+                    <option value="gieo_trong">Gieo trồng</option>
+                    <option value="cham_soc">Chăm sóc</option>
+                    <option value="phun_thuoc">
+                      Phun thuốc/Bảo vệ thực vật
+                    </option>
+                    <option value="bon_phan">Bón phân</option>
+                    <option value="thu_hoach">Thu hoạch</option>
+                    <option value="van_chuyen">Vận chuyển đến kho</option>
+                  </select>
+                </div>
 
-        <div class="product-details" id="productDetails">
-          <!-- Product details will be inserted here -->
-        </div>
+                <div class="form-group">
+                  <label for="historyAction">Hành động</label>
+                  <input
+                    type="text"
+                    id="historyAction"
+                    class="form-control"
+                    readonly
+                  />
+                </div>
 
-        <h3 class="history-title">Lịch sử sản phẩm</h3>
-        <div class="timeline" id="productHistory">
-          <!-- History timeline will be inserted here -->
+                <div class="form-group">
+                  <label for="historyDescription">Mô tả chi tiết</label>
+                  <textarea
+                    id="historyDescription"
+                    class="form-control"
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <!-- Các trường thông tin theo giai đoạn -->
+                <div
+                  class="form-group stage-specific-fields"
+                  id="gieo_trong_fields"
+                  style="display: none"
+                >
+                  <label>Thông tin gieo trồng</label>
+                  <div class="sub-fields">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="seedType"
+                      placeholder="Loại giống"
+                    />
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="seedSupplier"
+                      placeholder="Nơi cung cấp giống"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="form-group stage-specific-fields"
+                  id="cham_soc_fields"
+                  style="display: none"
+                >
+                  <label>Thông tin chăm sóc</label>
+                  <div class="sub-fields">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="careType"
+                      placeholder="Loại tiêu (tỉa cành, phủ đất,...)"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="form-group stage-specific-fields"
+                  id="phun_thuoc_fields"
+                  style="display: none"
+                >
+                  <label>Thông tin phun thuốc</label>
+                  <div class="sub-fields">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="pesticideType"
+                      placeholder="Loại thuốc"
+                    />
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="pesticideSupplier"
+                      placeholder="Đơn vị cung cấp"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="form-group stage-specific-fields"
+                  id="bon_phan_fields"
+                  style="display: none"
+                >
+                  <label>Thông tin bón phân</label>
+                  <div class="sub-fields">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="fertilizerType"
+                      placeholder="Loại phân bón"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="form-group stage-specific-fields"
+                  id="thu_hoach_fields"
+                  style="display: none"
+                >
+                  <label>Thông tin thu hoạch</label>
+                  <div class="sub-fields">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="harvestQuantity"
+                      placeholder="Sản lượng"
+                    />
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="harvestMethod"
+                      placeholder="Cách thu hoạch"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="form-group stage-specific-fields"
+                  id="van_chuyen_fields"
+                  style="display: none"
+                >
+                  <label>Thông tin vận chuyển</label>
+                  <div class="sub-fields">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="transporter"
+                      placeholder="Đơn vị vận chuyển"
+                    />
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="storageConditions"
+                      placeholder="Điều kiện bảo quản"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Thông tin người thực hiện</h3>
+                <div class="form-group">
+                  <label for="historyActor">Người thực hiện *</label>
+                  <input
+                    type="text"
+                    id="historyActor"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="historyActorRole">Vai trò *</label>
+                  <input
+                    type="text"
+                    id="historyActorRole"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="historyLocation">Địa điểm *</label>
+                  <input
+                    type="text"
+                    id="historyLocation"
+                    class="form-control"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Điều kiện môi trường</h3>
+                <div class="form-group">
+                  <label for="historyTemperature">Nhiệt độ</label>
+                  <input
+                    type="text"
+                    id="historyTemperature"
+                    class="form-control"
+                    placeholder="°C"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="historyHumidity">Độ ẩm</label>
+                  <input
+                    type="text"
+                    id="historyHumidity"
+                    class="form-control"
+                    placeholder="%"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Thêm lịch sử
+              </button>
+              <button type="reset" class="btn btn-secondary">
+                <i class="fas fa-undo"></i> Làm mới
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
-      <div id="errorMessage" class="error-message">
-        Không tìm thấy thông tin sản phẩm!
+      <!-- List Section -->
+      <div id="listSection" class="section" style="display: none">
+        <div class="section-header">
+          <h2><i class="fas fa-list"></i> Danh sách nông sản</h2>
+          <p>Tất cả sản phẩm đã được đăng ký trên hệ thống</p>
+        </div>
+        <div class="products-grid" id="productGrid">
+          <!-- Products will be added here by JavaScript -->
+        </div>
       </div>
     </div>
 
+    <!-- QR Scanner Modal -->
+    <div
+      id="qrScannerModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+      "
+    >
+      <div
+        style="
+          background: white;
+          max-width: 500px;
+          margin: 50px auto;
+          padding: 20px;
+          border-radius: var(--border-radius);
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h3>Quét mã QR</h3>
+          <button onclick="stopScanner()" class="btn" style="padding: 5px 10px">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div id="qr-reader"></div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" style="display: none">
+      <span id="toast-message"></span>
+    </div>
+
     <script>
-      // DOM elements
-      const productIdInput = document.getElementById("productId");
-      const searchButton = document.getElementById("searchButton");
-      const qrToggle = document.getElementById("qrToggle");
-      const qrIcon = document.getElementById("qr-icon");
-      const readerElement = document.getElementById("reader");
-      const resultContainer = document.getElementById("resultContainer");
-      const errorMessage = document.getElementById("errorMessage");
-
-      // Event listeners
-      searchButton.addEventListener("click", searchProduct);
-      productIdInput.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-          searchProduct();
-        }
-      });
-      qrToggle.addEventListener("click", toggleQrScanner);
-
-      let qrScannerVisible = false;
+      let currentProductId = null;
       let html5QrcodeScanner = null;
 
-      function toggleQrScanner() {
-        qrScannerVisible = !qrScannerVisible;
+      // Chuyển đổi tab
+      function switchTab(tabName) {
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+        document
+          .querySelector(`[data-tab="${tabName}"]`)
+          .classList.add("active");
 
-        if (qrScannerVisible) {
-          readerElement.style.display = "block";
-          qrIcon.className = "fas fa-chevron-up";
+        document.querySelectorAll(".section").forEach((section) => {
+          section.style.display = "none";
+        });
 
-          if (!html5QrcodeScanner) {
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-              fps: 10,
-              qrbox: { width: 250, height: 250 },
-            });
-            html5QrcodeScanner.render(onScanSuccess);
-          }
-        } else {
-          readerElement.style.display = "none";
-          qrIcon.className = "fas fa-chevron-down";
+        document.getElementById(`${tabName}Section`).style.display = "block";
+
+        if (tabName === "list") {
+          loadProducts();
         }
       }
 
-      async function searchProduct() {
-        const id = productIdInput.value.trim();
-
-        if (!id) {
-          alert("Vui lòng nhập mã sản phẩm!");
-          return;
-        }
-
-        try {
-          console.log("Searching for product:", id);
-          const res = await fetch(`/product/${id}`);
-
-          if (!res.ok) {
-            resultContainer.style.display = "none";
-            errorMessage.style.display = "block";
-            console.log("Product not found");
-            return;
-          }
-
-          const data = await res.json();
-          console.log("Product data received:", data);
-
-          displayProductInfo(data);
-
-          resultContainer.style.display = "block";
-          errorMessage.style.display = "none";
-        } catch (error) {
-          console.error("Error searching for product:", error);
-          resultContainer.style.display = "none";
-          errorMessage.style.display = "block";
-        }
-      }
-
-      function displayProductInfo(product) {
-        // Display product name and ID
-        document.getElementById("productName").textContent = product.name;
-        document.getElementById("displayProductId").textContent = product.id;
-
-        // Display product details
-        const detailsContainer = document.getElementById("productDetails");
-        detailsContainer.innerHTML = "";
-
-        // Add basic product info (excluding id, name, and history)
-        const excludeFields = ["id", "name", "history"];
-
-        for (const [key, value] of Object.entries(product)) {
-          if (!excludeFields.includes(key) && typeof value !== "object") {
-            const detailItem = document.createElement("div");
-            detailItem.className = "detail-item";
-
-            const label = document.createElement("div");
-            label.className = "detail-label";
-            label.textContent = formatLabel(key);
-
-            const valueElement = document.createElement("div");
-            valueElement.className = "detail-value";
-            valueElement.textContent = value;
-
-            detailItem.appendChild(label);
-            detailItem.appendChild(valueElement);
-            detailsContainer.appendChild(detailItem);
-          }
-        }
-
-        // Display history timeline
-        const historyContainer = document.getElementById("productHistory");
-        historyContainer.innerHTML = "";
-
-        if (product.history && product.history.length > 0) {
-          console.log("Displaying history:", product.history);
-          product.history.forEach((entry) => {
-            const timelineItem = document.createElement("div");
-            timelineItem.className = "timeline-item";
-
-            const dot = document.createElement("div");
-            dot.className = "timeline-dot";
-
-            const date = document.createElement("div");
-            date.className = "timeline-date";
-            date.textContent = formatDate(entry.date);
-
-            const action = document.createElement("div");
-            action.className = "timeline-action";
-            action.textContent = entry.action;
-
-            const location = document.createElement("div");
-            location.className = "timeline-location";
-            location.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${entry.location}`;
-
-            const description = document.createElement("div");
-            description.className = "timeline-description";
-            description.textContent = entry.description;
-
-            timelineItem.appendChild(dot);
-            timelineItem.appendChild(date);
-            timelineItem.appendChild(action);
-            timelineItem.appendChild(location);
-            timelineItem.appendChild(description);
-
-            historyContainer.appendChild(timelineItem);
-          });
-        } else {
-          console.log("No history found");
-          historyContainer.innerHTML =
-            "<p>Chưa có thông tin lịch sử cho sản phẩm này.</p>";
-        }
-      }
-
-      function formatLabel(key) {
-        // Convert camelCase to Title Case with spaces
-        const result = key.replace(/([A-Z])/g, " $1");
-        return result.charAt(0).toUpperCase() + result.slice(1);
-      }
-
-      function formatDate(dateString) {
-        const options = { year: "numeric", month: "long", day: "numeric" };
-        return new Date(dateString).toLocaleDateString("vi-VN", options);
-      }
-
-      function onScanSuccess(decodedText) {
-        productIdInput.value = decodedText;
-        searchProduct();
-
+      // Khởi tạo QR Scanner
+      function initQRScanner() {
         if (html5QrcodeScanner) {
           html5QrcodeScanner.clear();
-          qrScannerVisible = false;
-          readerElement.style.display = "none";
-          qrIcon.className = "fas fa-chevron-down";
+        }
+        html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", {
+          fps: 10,
+          qrbox: 250,
+        });
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+      }
+
+      // Xử lý khi quét QR thành công
+      function onScanSuccess(decodedText, decodedResult) {
+        stopScanner();
+        searchProduct(decodedText);
+      }
+
+      // Xử lý khi quét QR thất bại
+      function onScanError(error) {
+        console.warn(`QR error = ${error}`);
+      }
+
+      // Dừng QR Scanner
+      function stopScanner() {
+        if (html5QrcodeScanner) {
+          html5QrcodeScanner.clear();
+          html5QrcodeScanner = null;
+        }
+        document.getElementById("qrScannerModal").style.display = "none";
+      }
+
+      // Hiển thị QR Scanner
+      function showScanner() {
+        document.getElementById("qrScannerModal").style.display = "block";
+        initQRScanner();
+      }
+
+      // Hiển thị thông báo
+      function showToast(message, isError = false) {
+        const toast = document.getElementById("toast");
+        const toastMessage = document.getElementById("toast-message");
+        toastMessage.textContent = message;
+        toast.className = `toast ${isError ? "error" : "success"}`;
+        toast.style.display = "block";
+        toast.classList.add("show");
+        setTimeout(() => {
+          toast.classList.remove("show");
+          setTimeout(() => {
+            toast.style.display = "none";
+          }, 300);
+        }, 3000);
+      }
+
+      // Tìm kiếm sản phẩm
+      async function searchProduct(id) {
+        if (!id) return;
+
+        try {
+          const response = await fetch(`/product/${id}`);
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+          const product = await response.json();
+          displayProduct(product);
+          currentProductId = id;
+          switchTab("search");
+        } catch (error) {
+          showToast(error.message || "Không tìm thấy sản phẩm", true);
         }
       }
+
+      // Kiểm tra trạng thái blockchain
+      async function checkBlockchainStatus() {
+        try {
+          const response = await fetch("/blockchain/status");
+          const data = await response.json();
+
+          const statusIndicator = document.querySelector(".status-indicator");
+          const statusText = document.getElementById("blockchainStatus");
+
+          if (data.status === "connected") {
+            statusIndicator.classList.remove("offline");
+            statusText.textContent = `Đã kết nối (${data.productCount} sản phẩm)`;
+          } else {
+            statusIndicator.classList.add("offline");
+            statusText.textContent = data.message;
+          }
+        } catch (error) {
+          console.error("Error checking blockchain status:", error);
+          const statusIndicator = document.querySelector(".status-indicator");
+          const statusText = document.getElementById("blockchainStatus");
+          statusIndicator.classList.add("offline");
+          statusText.textContent = "Không thể kết nối";
+        }
+      }
+
+      // Tải danh sách sản phẩm
+      async function loadProducts() {
+        try {
+          const response = await fetch("/products");
+          const data = await response.json();
+          const productGrid = document.getElementById("productGrid");
+          productGrid.innerHTML = "";
+
+          if (data.products && data.products.length > 0) {
+            data.products.forEach((product) => {
+              const productCard = document.createElement("div");
+              productCard.className = "product-card";
+              productCard.innerHTML = `
+                <img class="product-image" src="${
+                  product.images ||
+                  "https://via.placeholder.com/300?text=No+Image"
+                }" alt="${product.name}">
+                <div class="product-info">
+                  <h3 class="product-title">${product.name}</h3>
+                  <div class="product-meta">
+                    <span><i class="fas fa-seedling"></i> ${
+                      product.variety || "N/A"
+                    }</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${
+                      product.origin || "N/A"
+                    }</span>
+                  </div>
+                  <div class="product-meta">
+                    <span><i class="fas fa-home"></i> ${
+                      product.farmName || "N/A"
+                    }</span>
+                    <span><i class="fas fa-user"></i> ${
+                      product.farmerName || "N/A"
+                    }</span>
+                  </div>
+                  <button onclick="searchProduct('${
+                    product.id
+                  }')" class="btn btn-primary">
+                    <i class="fas fa-info-circle"></i> Xem chi tiết
+                  </button>
+                </div>
+              `;
+              productGrid.appendChild(productCard);
+            });
+          } else {
+            productGrid.innerHTML =
+              "<p class='no-data'>Chưa có sản phẩm nào</p>";
+          }
+        } catch (error) {
+          console.error("Error loading products:", error);
+          showToast("Lỗi khi tải danh sách sản phẩm", true);
+        }
+      }
+
+      // Hiển thị thông tin sản phẩm
+      function displayProduct(product) {
+        const searchResult = document.getElementById("searchResult");
+        searchResult.innerHTML = `
+          <div class="product-detail">
+            <div class="product-header">
+              <img class="product-image" src="${
+                product.images ||
+                "https://via.placeholder.com/300?text=No+Image"
+              }" alt="${product.name}">
+              <div class="product-title">
+                <h2>${product.name}</h2>
+                <p class="product-id">Mã sản phẩm: ${product.id}</p>
+              </div>
+            </div>
+
+            <div class="product-sections">
+              <div class="product-section">
+                <h3><i class="fas fa-info-circle"></i> Thông tin cơ bản</h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Giống/Loại:</label>
+                    <span>${product.variety || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Mô tả:</label>
+                    <span>${product.description || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Phân hạng:</label>
+                    <span>${product.grade || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Số lượng:</label>
+                    <span>${product.quantity || "N/A"} ${
+          product.unit || ""
+        }</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Chứng nhận:</label>
+                    <span>${product.certifications || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-section">
+                <h3><i class="fas fa-map-marked-alt"></i> Nguồn gốc</h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Xuất xứ:</label>
+                    <span>${product.origin || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Trang trại:</label>
+                    <span>${product.farmName || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Địa chỉ:</label>
+                    <span>${product.farmAddress || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Mã số nông hộ:</label>
+                    <span>${product.farmerId || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Chủ trang trại:</label>
+                    <span>${product.farmerName || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-section">
+                <h3><i class="fas fa-calendar-alt"></i> Thời gian</h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Ngày gieo trồng:</label>
+                    <span>${formatDate(product.plantingDate)}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Ngày thu hoạch:</label>
+                    <span>${formatDate(product.harvestDate)}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Ngày đóng gói:</label>
+                    <span>${formatDate(product.packagingDate)}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Hạn sử dụng:</label>
+                    <span>${formatDate(product.expiryDate)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-section">
+                <h3><i class="fas fa-thermometer-half"></i> Bảo quản</h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Nhiệt độ bảo quản:</label>
+                    <span>${product.storageTemp || "N/A"}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Hướng dẫn bảo quản:</label>
+                    <span>${product.storageInstr || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="product-section">
+                <h3><i class="fas fa-history"></i> Lịch sử</h3>
+                <div class="timeline">
+                  ${
+                    product.history && product.history.length > 0
+                      ? product.history
+                          .map(
+                            (entry) => `
+                      <div class="timeline-item">
+                        <div class="timeline-header">
+                          <div><i class="fas fa-clock"></i> ${formatDate(
+                            entry.timestamp
+                          )}</div>
+                          <div><strong>${entry.stage}</strong></div>
+                        </div>
+                        <div class="timeline-content">
+                          <p><strong>Hành động:</strong> ${entry.action}</p>
+                          <p>${entry.description || ""}</p>
+                          <p><strong>Thực hiện:</strong> ${entry.actor} (${
+                              entry.actorRole
+                            })</p>
+                          <p><strong>Địa điểm:</strong> ${entry.location}</p>
+                          ${
+                            entry.temperature
+                              ? `<p><strong>Nhiệt độ:</strong> ${entry.temperature}</p>`
+                              : ""
+                          }
+                          ${
+                            entry.humidity
+                              ? `<p><strong>Độ ẩm:</strong> ${entry.humidity}</p>`
+                              : ""
+                          }
+                        </div>
+                      </div>
+                    `
+                          )
+                          .join("")
+                      : '<p class="no-data">Chưa có lịch sử cho sản phẩm này</p>'
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Thêm sản phẩm mới
+      async function addProduct(event) {
+        event.preventDefault();
+
+        try {
+          const product = {
+            id: document.getElementById("productId").value,
+            name: document.getElementById("productName").value,
+            description: document.getElementById("description").value,
+            variety: document.getElementById("variety").value,
+            origin: document.getElementById("origin").value,
+            farmName: document.getElementById("farmName").value,
+            farmAddress: document.getElementById("farmAddress").value,
+            farmerId: document.getElementById("farmerId").value,
+            farmerName: document.getElementById("farmerName").value,
+            plantingDate: document.getElementById("plantingDate").value,
+            harvestDate: document.getElementById("harvestDate").value,
+            packagingDate: document.getElementById("packagingDate").value,
+            expiryDate: document.getElementById("expiryDate").value,
+            storageTemp: document.getElementById("storageTemp").value,
+            storageInstr: document.getElementById("storageInstr").value,
+            quantity: document.getElementById("quantity").value,
+            unit: document.getElementById("unit").value,
+            grade: document.getElementById("grade").value,
+            certifications: document.getElementById("certifications").value,
+            images: document.getElementById("images").value,
+          };
+
+          const response = await fetch("/product", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(product),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showToast("Sản phẩm đã được thêm thành công!");
+            document.getElementById("addProductForm").reset();
+            checkBlockchainStatus();
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          console.error("Error adding product:", error);
+          showToast(error.message || "Lỗi khi thêm sản phẩm", true);
+        }
+
+        return false;
+      }
+
+      // Thêm lịch sử sản phẩm
+      async function addHistory(event) {
+        event.preventDefault();
+
+        try {
+          // Safely get value from an element
+          const getValue = (id) => {
+            const element = document.getElementById(id);
+            return element ? element.value : "";
+          };
+
+          const stage = getValue("historyStage");
+          if (!stage) {
+            throw new Error("Vui lòng chọn giai đoạn");
+          }
+
+          // Tạo action và description tự động dựa trên giai đoạn
+          let action = "";
+          let additionalInfo = [];
+
+          switch (stage) {
+            case "gieo_trong":
+              action = "Gieo trồng";
+              if (getValue("seedType"))
+                additionalInfo.push(`Loại giống: ${getValue("seedType")}`);
+              if (getValue("seedSupplier"))
+                additionalInfo.push(
+                  `Nhà cung cấp: ${getValue("seedSupplier")}`
+                );
+              break;
+            case "cham_soc":
+              action = "Chăm sóc";
+              if (getValue("careType"))
+                additionalInfo.push(`Loại chăm sóc: ${getValue("careType")}`);
+              break;
+            case "phun_thuoc":
+              action = "Phun thuốc bảo vệ thực vật";
+              if (getValue("pesticideType"))
+                additionalInfo.push(`Loại thuốc: ${getValue("pesticideType")}`);
+              if (getValue("pesticideSupplier"))
+                additionalInfo.push(
+                  `Nhà cung cấp: ${getValue("pesticideSupplier")}`
+                );
+              break;
+            case "bon_phan":
+              action = "Bón phân";
+              if (getValue("fertilizerType"))
+                additionalInfo.push(
+                  `Loại phân bón: ${getValue("fertilizerType")}`
+                );
+              break;
+            case "thu_hoach":
+              action = "Thu hoạch";
+              if (getValue("harvestQuantity"))
+                additionalInfo.push(`Số lượng: ${getValue("harvestQuantity")}`);
+              if (getValue("harvestMethod"))
+                additionalInfo.push(
+                  `Phương pháp: ${getValue("harvestMethod")}`
+                );
+              break;
+            case "van_chuyen":
+              action = "Vận chuyển";
+              if (getValue("transporter"))
+                additionalInfo.push(
+                  `Đơn vị vận chuyển: ${getValue("transporter")}`
+                );
+              if (getValue("storageConditions"))
+                additionalInfo.push(
+                  `Điều kiện bảo quản: ${getValue("storageConditions")}`
+                );
+              break;
+          }
+
+          // Tạo description từ thông tin nhập và thông tin chi tiết
+          let description = getValue("historyDescription");
+          if (additionalInfo.length > 0) {
+            if (description) {
+              description = `${description}\n\n${additionalInfo.join("\n")}`;
+            } else {
+              description = additionalInfo.join("\n");
+            }
+          }
+
+          const historyEntry = {
+            productId: getValue("historyProductId"),
+            stage: stage,
+            action: action,
+            description: description,
+            actor: getValue("historyActor"),
+            actorRole: getValue("historyActorRole"),
+            location: getValue("historyLocation"),
+            temperature: getValue("historyTemperature"),
+            humidity: getValue("historyHumidity"),
+            timestamp: new Date().toISOString(),
+          };
+
+          // Validate các trường bắt buộc
+          if (
+            !historyEntry.productId ||
+            !historyEntry.actor ||
+            !historyEntry.actorRole ||
+            !historyEntry.location
+          ) {
+            throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc");
+          }
+
+          const response = await fetch(
+            `/product/${historyEntry.productId}/history`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(historyEntry),
+            }
+          );
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showToast("Đã thêm lịch sử sản phẩm thành công!");
+            document.getElementById("addHistoryForm").reset();
+            // Reset display của các trường stage-specific
+            document
+              .querySelectorAll(".stage-specific-fields")
+              .forEach((field) => {
+                field.style.display = "none";
+              });
+            // Hiển thị lại thông tin sản phẩm nếu đang ở chế độ xem
+            if (currentProductId === historyEntry.productId) {
+              await searchProduct(currentProductId);
+            }
+          } else {
+            throw new Error(result.message || "Lỗi khi thêm lịch sử sản phẩm");
+          }
+        } catch (error) {
+          console.error("Error adding history:", error);
+          showToast(error.message || "Lỗi khi thêm lịch sử sản phẩm", true);
+        }
+      }
+
+      // Format date
+      function formatDate(dateString) {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat("vi-VN").format(date);
+      }
+
+      // Khởi tạo
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          await checkBlockchainStatus();
+          setInterval(checkBlockchainStatus, 30000);
+
+          // Thêm sự kiện cho các tab
+          document.querySelectorAll(".tab").forEach((tab) => {
+            tab.addEventListener("click", () => {
+              switchTab(tab.dataset.tab);
+            });
+          });
+
+          // Thêm sự kiện cho nút reset form
+          document.querySelectorAll("form").forEach((form) => {
+            form
+              .querySelector('button[type="reset"]')
+              ?.addEventListener("click", () => {
+                setTimeout(() => {
+                  form
+                    .querySelectorAll("input, select, textarea")
+                    .forEach((input) => {
+                      input.style.borderColor = "";
+                    });
+                }, 0);
+              });
+          });
+
+          document
+            .getElementById("historyStage")
+            .addEventListener("change", function () {
+              // Hide all stage-specific fields
+              document
+                .querySelectorAll(".stage-specific-fields")
+                .forEach((field) => {
+                  field.style.display = "none";
+                });
+
+              // Show the relevant fields for the selected stage
+              const selectedStage = this.value;
+              const actionField = document.getElementById("historyAction");
+
+              // Set default action based on stage
+              switch (selectedStage) {
+                case "gieo_trong":
+                  actionField.value = "Gieo trồng";
+                  break;
+                case "cham_soc":
+                  actionField.value = "Chăm sóc";
+                  break;
+                case "phun_thuoc":
+                  actionField.value = "Phun thuốc bảo vệ thực vật";
+                  break;
+                case "bon_phan":
+                  actionField.value = "Bón phân";
+                  break;
+                case "thu_hoach":
+                  actionField.value = "Thu hoạch";
+                  break;
+                case "van_chuyen":
+                  actionField.value = "Vận chuyển";
+                  break;
+                default:
+                  actionField.value = "";
+              }
+
+              if (selectedStage) {
+                const relevantFields = document.getElementById(
+                  selectedStage + "_fields"
+                );
+                if (relevantFields) {
+                  relevantFields.style.display = "block";
+                }
+              }
+            });
+        } catch (error) {
+          showToast("Lỗi kết nối blockchain", true);
+        }
+      });
     </script>
   </body>
 </html>

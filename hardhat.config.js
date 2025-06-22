@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-ethernal");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

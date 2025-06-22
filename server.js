@@ -48,9 +48,23 @@ app.post("/product", async (req, res) => {
   try {
     const newProduct = req.body;
 
-    // Kiểm tra dữ liệu đầu vào
-    if (!newProduct.id || !newProduct.name) {
-      return res.status(400).json({ message: "Thiếu thông tin sản phẩm" });
+    // Kiểm tra dữ liệu đầu vào bắt buộc
+    const requiredFields = [
+      "id",
+      "name",
+      "variety",
+      "origin",
+      "farmName",
+      "farmerId",
+      "farmerName",
+      "plantingDate",
+    ];
+
+    const missingFields = requiredFields.filter((field) => !newProduct[field]);
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: `Thiếu thông tin bắt buộc: ${missingFields.join(", ")}`,
+      });
     }
 
     console.log(`Adding product ${newProduct.id} to blockchain...`);
@@ -84,9 +98,22 @@ app.post("/product/:id/history", async (req, res) => {
     const productId = req.params.id;
     const historyEntry = req.body;
 
-    // Kiểm tra dữ liệu đầu vào
-    if (!historyEntry.action) {
-      return res.status(400).json({ message: "Thiếu thông tin lịch sử" });
+    // Kiểm tra dữ liệu đầu vào bắt buộc
+    const requiredFields = [
+      "stage",
+      "action",
+      "actor",
+      "actorRole",
+      "location",
+    ];
+    const missingFields = requiredFields.filter(
+      (field) => !historyEntry[field]
+    );
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: `Thiếu thông tin bắt buộc: ${missingFields.join(", ")}`,
+      });
     }
 
     console.log(`Adding history for product ${productId} to blockchain...`);
@@ -94,10 +121,14 @@ app.post("/product/:id/history", async (req, res) => {
     // Chuẩn bị dữ liệu lịch sử cho blockchain
     const blockchainHistoryEntry = {
       productId: productId,
+      stage: historyEntry.stage,
       action: historyEntry.action,
       description: historyEntry.description || "",
-      actor: historyEntry.actor || "",
-      location: historyEntry.location || "",
+      actor: historyEntry.actor,
+      actorRole: historyEntry.actorRole,
+      location: historyEntry.location,
+      temperature: historyEntry.temperature || "",
+      humidity: historyEntry.humidity || "",
       timestamp: historyEntry.timestamp || new Date().toISOString(),
     };
 

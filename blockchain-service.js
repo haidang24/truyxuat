@@ -8,14 +8,14 @@ class BlockchainService {
 
     // Contract ABI
     this.contractABI = [
-      "function addProduct(string _id, string _name, string _origin, string _manufactureDate, string _supplier, string _category, string _weight, string _price, string _expiryDate, string _certifications) external",
-      "function addHistoryEntry(string _productId, string _action, string _description, string _actor, string _location, string _timestamp) external",
-      "function getProduct(string _productId) external view returns (tuple(string id, string name, string origin, string manufactureDate, string supplier, string category, string weight, string price, string expiryDate, string certifications, bool exists, address creator, uint256 timestamp))",
-      "function getProductHistory(string _productId) external view returns (tuple(string productId, string action, string description, string actor, string location, string timestamp, address recorder, uint256 blockTimestamp)[])",
+      "function addProduct(string _id, string _name, string _description, string _variety, string _origin, string _farmName, string _farmAddress, string _farmerId, string _farmerName, string _plantingDate, string _harvestDate, string _packagingDate, string _expiryDate, string _storageTemp, string _storageInstr, string _quantity, string _unit, string _grade, string _certifications, string _images) external",
+      "function addHistoryEntry(string _productId, string _stage, string _action, string _description, string _actor, string _actorRole, string _location, string _temperature, string _humidity, string _timestamp) external",
+      "function getProduct(string _productId) external view returns (tuple(string id, string name, string description, string variety, string origin, string farmName, string farmAddress, string farmerId, string farmerName, string plantingDate, string harvestDate, string packagingDate, string expiryDate, string storageTemp, string storageInstr, string quantity, string unit, string grade, string certifications, string images, bool exists, address creator, uint256 timestamp))",
+      "function getProductHistory(string _productId) external view returns (tuple(string productId, string stage, string action, string description, string actor, string actorRole, string location, string temperature, string humidity, string timestamp, address recorder, uint256 blockTimestamp)[])",
       "function getAllProductIds() external view returns (string[])",
       "function getProductCount() external view returns (uint256)",
       "event ProductAdded(string indexed productId, string name, address creator)",
-      "event HistoryEntryAdded(string indexed productId, string action, address recorder)",
+      "event HistoryEntryAdded(string indexed productId, string stage, string action, address recorder)",
     ];
 
     this.contract = null;
@@ -72,14 +72,24 @@ class BlockchainService {
       const tx = await this.contract.addProduct(
         productData.id,
         productData.name,
+        productData.description,
+        productData.variety,
         productData.origin,
-        productData.manufactureDate,
-        productData.supplier,
-        productData.category,
-        productData.weight,
-        productData.price,
+        productData.farmName,
+        productData.farmAddress,
+        productData.farmerId,
+        productData.farmerName,
+        productData.plantingDate,
+        productData.harvestDate,
+        productData.packagingDate,
         productData.expiryDate,
-        productData.certifications || ""
+        productData.storageTemp,
+        productData.storageInstr,
+        productData.quantity,
+        productData.unit,
+        productData.grade,
+        productData.certifications,
+        productData.images
       );
 
       await tx.wait();
@@ -112,10 +122,14 @@ class BlockchainService {
       );
       const tx = await this.contract.addHistoryEntry(
         historyData.productId,
+        historyData.stage,
         historyData.action,
         historyData.description,
         historyData.actor,
+        historyData.actorRole,
         historyData.location,
+        historyData.temperature,
+        historyData.humidity,
         historyData.timestamp
       );
 
@@ -150,14 +164,24 @@ class BlockchainService {
       return {
         id: result.id,
         name: result.name,
+        description: result.description,
+        variety: result.variety,
         origin: result.origin,
-        manufactureDate: result.manufactureDate,
-        supplier: result.supplier,
-        category: result.category,
-        weight: result.weight,
-        price: result.price,
+        farmName: result.farmName,
+        farmAddress: result.farmAddress,
+        farmerId: result.farmerId,
+        farmerName: result.farmerName,
+        plantingDate: result.plantingDate,
+        harvestDate: result.harvestDate,
+        packagingDate: result.packagingDate,
         expiryDate: result.expiryDate,
+        storageTemp: result.storageTemp,
+        storageInstr: result.storageInstr,
+        quantity: result.quantity,
+        unit: result.unit,
+        grade: result.grade,
         certifications: result.certifications,
+        images: result.images,
         creator: result.creator,
         timestamp: result.timestamp.toString(),
       };
@@ -190,10 +214,14 @@ class BlockchainService {
       );
       return result.map((entry) => ({
         productId: entry.productId,
+        stage: entry.stage,
         action: entry.action,
         description: entry.description,
         actor: entry.actor,
+        actorRole: entry.actorRole,
         location: entry.location,
+        temperature: entry.temperature,
+        humidity: entry.humidity,
         timestamp: entry.timestamp,
         recorder: entry.recorder,
         blockTimestamp: entry.blockTimestamp.toString(),

@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.24.1"
+    "hardhat": "^2.24.1",
+    "hardhat-ethernal": "^3.4.0"
   }
 }
