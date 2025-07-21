@@ -4,7 +4,9 @@ const fs = require("fs");
 class BlockchainService {
   constructor() {
     // Kết nối tới Hardhat local network
-    this.provider = new ethers.JsonRpcProvider("http://localhost:8545");
+    this.provider = new ethers.JsonRpcProvider(
+      "https://rpc.sepolia-api.lisk.com"
+    );
 
     // Contract ABI
     this.contractABI = [
@@ -34,7 +36,11 @@ class BlockchainService {
         this.contractAddress = contractInfo.address;
 
         // Lấy signer (account đầu tiên từ Hardhat)
-        this.signer = await this.provider.getSigner(0);
+        // this.signer = await this.provider.getSigner(0);
+        this.signer = new ethers.Wallet(
+          "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+          this.provider
+        );
         this.contract = new ethers.Contract(
           this.contractAddress,
           this.contractABI,
